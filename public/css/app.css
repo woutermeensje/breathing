@@ -1,0 +1,46 @@
+/* Projectkleur: tijdelijk, nog niet door Wouter gekozen */
+:root {
+    --color-primary: #3E7C6B;
+    --color-primary-dark: #336757;
+}
+
+* { box-sizing: border-box; }
+
+body {
+    margin: 0;
+    background: #FBFAF8;
+    font-family: 'Work Sans', sans-serif;
+    color: #333;
+}
+
+a, a:hover, a:focus { text-decoration: none; }
+
+.blok {
+    background: #FFFFFF;
+    border: 1px solid #dedede;
+    border-radius: 5px;
+    box-shadow: none;
+}
+
+.wrap { max-width: 900px; margin: 0 auto; padding: 40px 20px; }
+
+.kop h1 { margin: 0 0 6px; font-size: 24px; font-weight: 600; }
+.kop p { margin: 0 0 24px; font-size: 16px; font-weight: 300; }
+
+.golf-blok { padding: 20px 24px 24px; margin-bottom: 20px; }
+
+.status {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 12px;
+    font-size: 20px;
+    font-weight: 600;
+}
+#tijd { font-size: 15px; font-weight: 300; font-variant-numeric: tabular-nums; }
+
+#golf { display: block; width: 100%; height: 280px; }
+@media (max-width: 768px) { #golf { height: 220px; } }
+
+.instellingen { padding: 24px; }
+#tempo { margin-top: 16px; }
