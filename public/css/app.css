@@ -1,7 +1,12 @@
-/* Projectkleur: tijdelijk, nog niet door Wouter gekozen */
+/* Twee warme kleuren: amber = inademen, terracotta = uitademen */
 :root {
-    --color-primary: #3E7C6B;
-    --color-primary-dark: #336757;
+    --kleur-in: #E39B2D;
+    --kleur-in-tekst: #A66A10;
+    --kleur-uit: #C2502F;
+    --kleur-uit-tekst: #A23F21;
+    --kleur-straks: #EADFD4;
+    --color-primary: var(--kleur-uit);
+    --color-primary-dark: #A9431F;
 }
 
 * { box-sizing: border-box; }
@@ -24,7 +29,10 @@ a, a:hover, a:focus { text-decoration: none; }
 
 .wrap { max-width: 900px; margin: 0 auto; padding: 40px 20px; }
 
-.kop h1 { margin: 0 0 6px; font-size: 24px; font-weight: 600; }
+.kop h1 { margin: 0 0 10px; font-size: 22px; font-weight: 600; }
+.logo { display: flex; align-items: center; gap: 10px; letter-spacing: -.2px; }
+.logo img { display: block; }
+.logo span { font-weight: 300; margin-left: -4px; }
 .kop p { margin: 0 0 24px; font-size: 16px; font-weight: 300; }
 
 .golf-blok { padding: 20px 24px 24px; margin-bottom: 20px; }
@@ -37,6 +45,9 @@ a, a:hover, a:focus { text-decoration: none; }
     font-size: 20px;
     font-weight: 600;
 }
+#fase { transition: color .3s ease; }
+#fase[data-fase="in"] { color: var(--kleur-in-tekst); }
+#fase[data-fase="uit"] { color: var(--kleur-uit-tekst); }
 #tijd { font-size: 15px; font-weight: 300; font-variant-numeric: tabular-nums; }
 
 #golf { display: block; width: 100%; height: 280px; }
@@ -44,3 +55,9 @@ a, a:hover, a:focus { text-decoration: none; }
 
 .instellingen { padding: 24px; }
 #tempo { margin-top: 16px; }
+
+.legenda { display: flex; gap: 18px; margin-top: 12px; font-size: 13px; color: #777; }
+.legenda span { display: inline-flex; align-items: center; gap: 6px; }
+.legenda i { display: inline-block; width: 14px; height: 3px; border-radius: 2px; }
+.legenda .in i { background: var(--kleur-in); }
+.legenda .uit i { background: var(--kleur-uit); }

@@ -3,7 +3,11 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Breathing wave: follow your rhythm</title>
+    <title>Breathing Pattern: follow the wave, breathe in your own rhythm</title>
+    <link rel="icon" href="{{ asset('favicon.svg') }}" type="image/svg+xml">
+    <link rel="icon" href="{{ asset('favicon.ico') }}" sizes="32x32">
+    <link rel="apple-touch-icon" href="{{ asset('apple-touch-icon.png') }}">
+    <meta name="theme-color" content="#FBFAF8">
     <meta name="description" content="Follow a calm wave: up is breathing in, down is breathing out. Set your own counts, for example 4 in and 7 out.">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -17,7 +21,7 @@
 <body>
     <main class="wrap">
         <header class="kop">
-            <h1>Breathing wave</h1>
+            <h1 class="logo"><img src="{{ asset('favicon.svg') }}" alt="" width="34" height="34">Breathing <span>Pattern</span></h1>
             <p>Wave goes up: breathe in. Wave goes down: breathe out. Let the dot set your pace.</p>
         </header>
 
@@ -27,6 +31,7 @@
                 <span id="tijd">0:00</span>
             </div>
             <canvas id="golf" aria-label="Breathing wave"></canvas>
+            <div class="legenda"><span class="in"><i></i>Breathe in</span><span class="uit"><i></i>Breathe out</span></div>
         </section>
 
         <section class="blok instellingen">

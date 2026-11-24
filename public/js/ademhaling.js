@@ -14,7 +14,12 @@
     const AANLOOP = 3;        // seconden vlakke lijn voordat je begint
     const ZICHTBAAR = 24;     // seconden die je op het scherm ziet
     const BOL_X = 0.3;        // positie van het bolletje (deel van de breedte)
-    const kleur = getComputedStyle(document.documentElement).getPropertyValue('--color-primary').trim() || '#3E7C6B';
+    const css = getComputedStyle(document.documentElement);
+    const kleur = {
+        in: css.getPropertyValue('--kleur-in').trim() || '#E39B2D',
+        uit: css.getPropertyValue('--kleur-uit').trim() || '#C2502F',
+        straks: css.getPropertyValue('--kleur-straks').trim() || '#EADFD4',
+    };
 
     let bezig = false;
     let startTijd = 0;
@@ -52,6 +57,12 @@
         return (1 + Math.cos(Math.PI * (p - s.in) / s.uit)) / 2;
     }
 
+    // Welke fase op tijdstip t: 'in' of 'uit' (de aanloop telt als 'uit', de rustlijn)
+    function fase(t, s) {
+        if (t < 0) return 'uit';
+        return t % (s.in + s.uit) < s.in ? 'in' : 'uit';
+    }
+
     function formaat() {
         const dpr = window.devicePixelRatio || 1;
         canvas.width = canvas.clientWidth * dpr;
@@ -80,26 +91,41 @@
             ctx.stroke();
         });
 
-        // Golf: afgelegd deel in projectkleur, wat komt in grijs
-        const lijn = (van, tot, stijl, dikte) => {
-            ctx.beginPath();
-            for (let x = van; x <= tot; x += 2) {
-                const n = niveau(t + (x - bolX) / pxPerSec, s);
-                x === van ? ctx.moveTo(x, y(n)) : ctx.lineTo(x, y(n));
+        // Golf: afgelegd deel in amber (in) en terracotta (uit), wat komt in zacht beige
+        ctx.lineWidth = 3;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        const punt = (x) => [x, y(niveau(t + (x - bolX) / pxPerSec, s))];
+        const tijdOp = (x) => t + (x - bolX) / pxPerSec;
+
+        let huidig = fase(tijdOp(0), s);
+        ctx.beginPath();
+        ctx.moveTo(...punt(0));
+        for (let x = 2; x <= bolX; x += 2) {
+            const f = fase(tijdOp(x), s);
+            ctx.lineTo(...punt(x));
+            if (f !== huidig) {
+                ctx.strokeStyle = kleur[huidig];
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.moveTo(...punt(x));
+                huidig = f;
             }
-            ctx.strokeStyle = stijl;
-            ctx.lineWidth = dikte;
-            ctx.lineCap = 'round';
-            ctx.lineJoin = 'round';
-            ctx.stroke();
-        };
-        lijn(0, bolX, kleur, 3);
-        lijn(bolX, w, '#cfcfcf', 3);
+        }
+        ctx.lineTo(...punt(bolX));
+        ctx.strokeStyle = kleur[huidig];
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.moveTo(...punt(bolX));
+        for (let x = bolX + 2; x <= w; x += 2) ctx.lineTo(...punt(x));
+        ctx.strokeStyle = kleur.straks;
+        ctx.stroke();
 
         // Bolletje
         ctx.beginPath();
         ctx.arc(bolX, y(niveau(t, s)), 11, 0, Math.PI * 2);
-        ctx.fillStyle = kleur;
+        ctx.fillStyle = kleur[fase(t, s)];
         ctx.fill();
         ctx.lineWidth = 3;
         ctx.strokeStyle = '#ffffff';
@@ -108,6 +134,7 @@
 
     function werkStatusBij(t) {
         const s = instellingen();
+        faseEl.dataset.fase = t < 0 ? '' : fase(t, s);
         if (t < 0) {
             faseEl.textContent = `Starting in ${Math.ceil(-t)}`;
             tijdEl.textContent = '0:00';
@@ -157,6 +184,7 @@
         Object.values(velden).forEach((v) => (v.disabled = false));
         startBtn.innerHTML = '<i class="ph ph-play"></i><span>Start</span>';
         faseEl.textContent = melding;
+        faseEl.dataset.fase = '';
         wakeLock?.release().catch(() => {});
         wakeLock = null;
         teken(-AANLOOP);
