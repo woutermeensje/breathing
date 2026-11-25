@@ -1,9 +1,10 @@
-/* Twee warme kleuren: amber = inademen, terracotta = uitademen */
+/* Amber voor inademen, terracotta voor uitademen en paars voor vasthouden. */
 :root {
     --kleur-in: #E39B2D;
     --kleur-in-tekst: #A66A10;
     --kleur-uit: #C2502F;
     --kleur-uit-tekst: #A23F21;
+    --kleur-vast: #736298;
     --kleur-straks: #EADFD4;
     --color-primary: var(--kleur-uit);
     --color-primary-dark: #A9431F;
@@ -35,29 +36,31 @@ a, a:hover, a:focus { text-decoration: none; }
 .logo span { font-weight: 300; margin-left: -4px; }
 .kop p { margin: 0 0 24px; font-size: 16px; font-weight: 300; }
 
-.golf-blok { padding: 20px 24px 24px; margin-bottom: 20px; }
+.adem-blok { padding: 20px 24px 16px; margin-bottom: 20px; }
+
+.patroon-keuze { margin-bottom: 20px; }
+.patroon-keuze select { max-width: 260px; }
+.patroon-keuze .hulp { margin-top: 8px; }
 
 .status {
     display: flex;
     justify-content: space-between;
     align-items: baseline;
-    margin-bottom: 12px;
+    gap: 12px;
     font-size: 20px;
     font-weight: 600;
 }
 #fase { transition: color .3s ease; }
 #fase[data-fase="in"] { color: var(--kleur-in-tekst); }
 #fase[data-fase="uit"] { color: var(--kleur-uit-tekst); }
-#tijd { font-size: 15px; font-weight: 300; font-variant-numeric: tabular-nums; }
+#fase[data-fase="vastIn"],
+#fase[data-fase="vastUit"] { color: var(--kleur-vast); }
+#fase-tellen,
+#tijd { font-variant-numeric: tabular-nums; }
+#tijd { font-size: 15px; font-weight: 300; white-space: nowrap; }
 
-#golf { display: block; width: 100%; height: 280px; }
-@media (max-width: 768px) { #golf { height: 220px; } }
+#adem-animatie { display: block; width: 100%; height: 246px; }
+@media (max-width: 768px) { #adem-animatie { height: 212px; } }
 
 .instellingen { padding: 24px; }
 #tempo { margin-top: 16px; }
-
-.legenda { display: flex; gap: 18px; margin-top: 12px; font-size: 13px; color: #777; }
-.legenda span { display: inline-flex; align-items: center; gap: 6px; }
-.legenda i { display: inline-block; width: 14px; height: 3px; border-radius: 2px; }
-.legenda .in i { background: var(--kleur-in); }
-.legenda .uit i { background: var(--kleur-uit); }
