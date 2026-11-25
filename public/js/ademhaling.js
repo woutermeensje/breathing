@@ -116,65 +116,153 @@
         ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     }
 
-    function tekenVierkant(x, y, halveZijde, faseIndex, voortgang, faseKleur) {
+    const ZICHTBAAR = 24;   // seconden golf die je tegelijk ziet
+    const BOL_X = .3;       // positie van het bolletje op de golf (deel van de breedte)
+    const ease = (v) => (1 - Math.cos(Math.PI * v)) / 2;
+
+    // Waar zit je op tijdstip t: welke fase, hoe ver in die fase en hoe hoog op de golf
+    function faseOp(t, { fases, cyclus }) {
+        if (t < 0) return { index: -1, fase: null, voortgang: 0, niveau: 0 };
+        const cyclusTijd = t % cyclus;
+        let index = fases.findIndex((fase) => cyclusTijd < fase.eind);
+        if (index === -1) index = fases.length - 1;
+        const fase = fases[index];
+        const voortgang = Math.min(1, (cyclusTijd - fase.begin) / fase.seconden);
+        return { index, fase, voortgang, niveau: fase.van + (fase.tot - fase.van) * ease(voortgang) };
+    }
+
+    function tekenGolf(instellingen, t) {
+        const breedte = canvas.clientWidth;
+        const hoogte = canvas.clientHeight;
+        const marge = 18;
+        const pxPerSec = breedte / Math.max(ZICHTBAAR, instellingen.cyclus * 1.6);
+        const bolX = breedte * BOL_X;
+        const y = (niveau) => hoogte - marge - niveau * (hoogte - 2 * marge);
+        const tijdOp = (x) => t + (x - bolX) / pxPerSec;
+        const punt = (x) => [x, y(faseOp(tijdOp(x), instellingen).niveau)];
+        const kleurVan = (x) => faseOp(tijdOp(x), instellingen).fase?.kleur ?? kleurUit;
+
+        ctx.lineWidth = 1;
+        ctx.strokeStyle = '#eeeeee';
+        for (const niveau of [0, 1]) {
+            ctx.beginPath();
+            ctx.moveTo(0, y(niveau) + .5);
+            ctx.lineTo(breedte, y(niveau) + .5);
+            ctx.stroke();
+        }
+
+        ctx.lineWidth = 3;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+
+        // Afgelegd deel: per fase in de eigen kleur
+        let kleur = kleurVan(0);
+        ctx.beginPath();
+        ctx.moveTo(...punt(0));
+        for (let x = 2; x <= bolX; x += 2) {
+            ctx.lineTo(...punt(x));
+            const volgende = kleurVan(x);
+            if (volgende !== kleur) {
+                ctx.strokeStyle = kleur;
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.moveTo(...punt(x));
+                kleur = volgende;
+            }
+        }
+        ctx.lineTo(...punt(bolX));
+        ctx.strokeStyle = kleur;
+        ctx.stroke();
+
+        // Wat nog komt: zacht beige
+        ctx.beginPath();
+        ctx.moveTo(...punt(bolX));
+        for (let x = bolX + 2; x <= breedte; x += 2) ctx.lineTo(...punt(x));
+        ctx.strokeStyle = kleurStraks;
+        ctx.stroke();
+
+        const nu = faseOp(t, instellingen);
+        tekenBolletje(bolX, y(nu.niveau), nu.fase?.kleur ?? kleurIn);
+    }
+
+    function tekenVierkant(instellingen, t) {
+        const breedte = canvas.clientWidth;
+        const hoogte = canvas.clientHeight;
+        const halveZijde = Math.min(breedte, hoogte) / 2 - 30;
+        const x = breedte / 2;
+        const y = hoogte / 2;
         const links = x - halveZijde;
         const rechts = x + halveZijde;
         const boven = y - halveZijde;
         const onder = y + halveZijde;
+        // Linksonder beginnen, met de klok mee: omhoog = in, rechts = vast, omlaag = uit, links = vast
         const hoeken = [[links, onder], [links, boven], [rechts, boven], [rechts, onder]];
+        const nu = faseOp(t, instellingen);
 
-        ctx.lineCap = 'round';
         ctx.lineWidth = 3;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
         ctx.strokeStyle = kleurStraks;
         ctx.strokeRect(links, boven, halveZijde * 2, halveZijde * 2);
 
-        const [beginX, beginY] = hoeken[faseIndex];
-        const [eindX, eindY] = hoeken[(faseIndex + 1) % hoeken.length];
-        ctx.strokeStyle = faseKleur;
-        ctx.lineWidth = 4;
+        const zijde = (i, deel) => {
+            const [bx, by] = hoeken[i];
+            const [ex, ey] = hoeken[(i + 1) % 4];
+            return [bx + (ex - bx) * deel, by + (ey - by) * deel];
+        };
 
-        ctx.beginPath();
-        ctx.moveTo(beginX, beginY);
-        ctx.lineTo(eindX, eindY);
-        ctx.globalAlpha = .25;
-        ctx.stroke();
-        ctx.globalAlpha = 1;
+        // Zijdes die je deze ronde al gehad hebt, en het stuk van de huidige zijde
+        for (let i = 0; i <= nu.index; i++) {
+            ctx.beginPath();
+            ctx.moveTo(...hoeken[i]);
+            ctx.lineTo(...zijde(i, i < nu.index ? 1 : nu.voortgang));
+            ctx.strokeStyle = instellingen.fases[i].kleur;
+            ctx.stroke();
+        }
 
+        // Kleine labels langs de zijdes
+        ctx.font = '300 13px "Work Sans", sans-serif';
+        ctx.fillStyle = '#999';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('Hold', x, boven - 21);
+        ctx.fillText('Hold', x, onder + 22);
+        ctx.save();
+        ctx.translate(links - 21, y);
+        ctx.rotate(-Math.PI / 2);
+        ctx.fillText('In', 0, 0);
+        ctx.restore();
+        ctx.save();
+        ctx.translate(rechts + 21, y);
+        ctx.rotate(Math.PI / 2);
+        ctx.fillText('Out', 0, 0);
+        ctx.restore();
+
+        const [px, py] = nu.index === -1 ? hoeken[0] : zijde(nu.index, nu.voortgang);
+        tekenBolletje(px, py, nu.fase?.kleur ?? kleurIn);
+    }
+
+    function tekenBolletje(x, y, kleur) {
         ctx.beginPath();
-        ctx.moveTo(beginX, beginY);
-        ctx.lineTo(beginX + (eindX - beginX) * voortgang, beginY + (eindY - beginY) * voortgang);
+        ctx.arc(x, y, 11, 0, Math.PI * 2);
+        ctx.fillStyle = kleur;
+        ctx.fill();
+        ctx.lineWidth = 3;
+        ctx.strokeStyle = '#ffffff';
         ctx.stroke();
     }
 
-    function teken(patroon, fase, faseIndex = 0, voortgang = 0) {
-        const breedte = canvas.clientWidth;
-        const hoogte = canvas.clientHeight;
-        const x = breedte / 2;
-        const y = hoogte / 2;
-        const halveZijde = Math.min(breedte, hoogte) * .40;
-        const verloop = (1 - Math.cos(Math.PI * voortgang)) / 2;
-        const niveau = fase.van + (fase.tot - fase.van) * verloop;
-        const straal = halveZijde * (.28 + .44 * niveau);
-
-        ctx.clearRect(0, 0, breedte, hoogte);
-        if (patroon === 'box') {
-            tekenVierkant(x, y, halveZijde, faseIndex, voortgang, fase.kleur);
+    function teken(instellingen, t) {
+        ctx.clearRect(0, 0, canvas.clientWidth, canvas.clientHeight);
+        if (instellingen.patroon === 'box') {
+            tekenVierkant(instellingen, t);
+        } else {
+            tekenGolf(instellingen, t);
         }
-
-        ctx.beginPath();
-        ctx.arc(x, y, straal, 0, Math.PI * 2);
-        ctx.fillStyle = fase.kleur;
-        ctx.fill();
-
-        const licht = ctx.createRadialGradient(x - straal * .35, y - straal * .4, 0, x, y, straal);
-        licht.addColorStop(0, 'rgba(255, 255, 255, .35)');
-        licht.addColorStop(1, 'rgba(255, 255, 255, 0)');
-        ctx.fillStyle = licht;
-        ctx.fill();
     }
 
     function tekenRust() {
-        teken(patroonEl.value, ademfases.in);
+        teken(leesInstellingen(), -AANLOOP);
     }
 
     function toonFase(tekst, tellen = '', naam = '') {
@@ -193,7 +281,7 @@
     function loop(nu) {
         if (!sessie) return;
 
-        const { patroon, fases, cyclus, duur, startTijd, einde } = sessie;
+        const { fases, cyclus, duur, startTijd, einde } = sessie;
         const verstreken = (nu - startTijd) / 1000 - AANLOOP;
 
         if (verstreken >= einde) {
@@ -202,15 +290,13 @@
             return;
         }
 
+        teken(sessie, verstreken);
         if (verstreken < 0) {
-            tekenRust();
             toonFase('Starting in', ` ${Math.ceil(-verstreken)}`);
         } else {
             const cyclusTijd = verstreken % cyclus;
-            const faseIndex = fases.findIndex((fase) => cyclusTijd < fase.eind);
-            const fase = fases[faseIndex];
+            const fase = fases.find((f) => cyclusTijd < f.eind) ?? fases[fases.length - 1];
             const faseTijd = cyclusTijd - fase.begin;
-            teken(patroon, fase, faseIndex, faseTijd / fase.seconden);
             toonFase(fase.tekst, ` · ${Math.ceil(fase.seconden - faseTijd)}`, fase.naam);
             toonTijd(verstreken, duur);
         }

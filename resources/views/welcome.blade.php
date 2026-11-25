@@ -8,7 +8,7 @@
     <link rel="icon" href="{{ asset('favicon.ico') }}" sizes="32x32">
     <link rel="apple-touch-icon" href="{{ asset('apple-touch-icon.png') }}">
     <meta name="theme-color" content="#FBFAF8">
-    <meta name="description" content="Follow the breathing ball at your own pace. Choose a pattern and adjust the timing for each phase.">
+    <meta name="description" content="Follow a calm breathing wave at your own pace. Choose a pattern and set the timing for each phase.">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -22,7 +22,7 @@
     <main class="wrap">
         <header class="kop">
             <h1 class="logo"><img src="{{ asset('favicon.svg') }}" alt="" width="34" height="34">Breathing <span>Pattern</span></h1>
-            <p>Breathe in as the ball grows and out as it shrinks.</p>
+            <p>Follow the dot. Up: breathe in. Down: breathe out. Flat: hold your breath.</p>
         </header>
 
         <section class="blok adem-blok" aria-label="Breathing guide">
@@ -34,7 +34,7 @@
                     <option value="coherent">Coherent breathing · 5–5</option>
                     <option value="4-7-8">4–7–8 breathing</option>
                 </select>
-                <p class="hulp" id="patroon-hulp" hidden>Each side has its own duration. Start at the bottom left and follow the square clockwise.</p>
+                <p class="hulp" id="patroon-hulp" hidden>Start at the bottom left and follow the square clockwise: up is in, across is hold, down is out.</p>
             </div>
             <div class="status">
                 <span><span id="fase" aria-live="polite">Ready to start</span><span id="fase-tellen" aria-hidden="true"></span></span>
