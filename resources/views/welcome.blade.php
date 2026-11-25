@@ -29,9 +29,8 @@
             <div class="patroon-keuze">
                 <label for="patroon">Breathing pattern</label>
                 <select id="patroon" aria-describedby="patroon-hulp">
-                    <option value="lang-uit">Extended exhale</option>
+                    <option value="coherent">Coherent breathing</option>
                     <option value="box">Box breathing</option>
-                    <option value="coherent">Coherent breathing · 5–5</option>
                     <option value="4-7-8">4–7–8 breathing</option>
                 </select>
                 <p class="hulp" id="patroon-hulp" hidden>Start at the bottom left and follow the square clockwise: up is in, across is hold, down is out.</p>

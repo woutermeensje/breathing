@@ -17,9 +17,8 @@
     };
 
     const AANLOOP = 3;
-    const STANDAARD_PATROON = 'lang-uit';
+    const STANDAARD_PATROON = 'coherent';
     const patronen = {
-        'lang-uit': { in: 4, uit: 7 },
         box: { in: 4, vastIn: 4, uit: 4, vastUit: 4 },
         coherent: { in: 5, uit: 5 },
         '4-7-8': { in: 4, vastIn: 7, uit: 8 },
@@ -49,6 +48,8 @@
     }
 
     const opgeslagen = leesOpslag();
+    // 'Extended exhale' bestaat niet meer: dat is nu gewoon coherent ademen met eigen tellen.
+    if (opgeslagen.patroon === 'lang-uit') opgeslagen.patroon = STANDAARD_PATROON;
     const tijden = { ...opgeslagen.tijden };
     // Oudere versies bewaarden alleen de twee tijden voor het oorspronkelijke patroon.
     tijden[STANDAARD_PATROON] ??= { in: opgeslagen.in, uit: opgeslagen.uit };
